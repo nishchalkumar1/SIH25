@@ -48,20 +48,49 @@ const Chatbot: React.FC = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
-    setInputText('');
     setIsTyping(true);
+    const currentInput = inputText;
+    setInputText('');
 
-    // Simulate bot response
-    setTimeout(() => {
+    try {
+      const response = await fetch('http://localhost:8000/ask', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          question: currentInput,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
       const botResponse: Message = {
         id: messages.length + 2,
-        text: mockBotResponses[Math.floor(Math.random() * mockBotResponses.length)],
+        text: data.answer || data.response || 'I received your question but couldn\'t generate a proper response.',
         isBot: true,
         timestamp: new Date(),
       };
+      
       setMessages(prev => [...prev, botResponse]);
+    } catch (error) {
+      console.error('Error calling chatbot API:', error);
+      
+      const errorResponse: Message = {
+        id: messages.length + 2,
+        text: 'Sorry, I\'m having trouble connecting to the server. Please check if the API is running on localhost:8000 and try again.',
+        isBot: true,
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, errorResponse]);
+    } finally {
       setIsTyping(false);
-    }, 2000);
+    }
   };
 
   const handleSampleQuestion = (question: string) => {
