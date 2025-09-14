@@ -51,46 +51,19 @@ const Chatbot: React.FC = () => {
     setIsTyping(true);
     setInputText('');
 
-    try {
-      const response = await fetch('http://localhost:8000/ask', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          question: userMessage.text
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+    // Simulate API delay
+    setTimeout(() => {
+      const randomResponse = mockBotResponses[Math.floor(Math.random() * mockBotResponses.length)];
       const botResponse: Message = {
         id: messages.length + 2,
-        text: data.answer || data.response || 'I received your question but couldn\'t generate a proper response.',
-        isBot: true,
-        timestamp: new Date(),
-      };
-
-      setMessages(prev => [...prev, botResponse]);
-    } catch (error) {
-      console.error('Error calling chatbot API:', error);
-      
-      // Fallback to mock response when API fails
-      const fallbackResponse = mockBotResponses[Math.floor(Math.random() * mockBotResponses.length)];
-      const botResponse: Message = {
-        id: messages.length + 2,
-        text: `API temporarily unavailable. Here's a sample response: ${fallbackResponse}`,
+        text: randomResponse,
         isBot: true,
         timestamp: new Date(),
       };
       
       setMessages(prev => [...prev, botResponse]);
-    } finally {
       setIsTyping(false);
-    }
+    }, 1000 + Math.random() * 2000);
   };
 
   const handleSampleQuestion = (question: string) => {
